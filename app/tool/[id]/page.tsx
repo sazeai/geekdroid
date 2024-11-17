@@ -1,6 +1,6 @@
 'use client'
 
-import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react'
+import { useState } from 'react'
 import { Star, ArrowLeft, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +19,20 @@ import { Schema } from '@/components/seo/schema'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AffiliatePopup } from '@/components/affiliate-popup'
 import { AdUnit } from '@/components/ads/ad-unit'
+
+// Define the Tool interface
+interface Tool {
+  id: string
+  name: string
+  category: string
+  is_new: boolean
+  image: string
+  long_description: string
+  features: string[]
+  rating: number
+  pricing: string
+  affiliate_link: string
+}
 
 export default function ToolPage({ params }: { params: { id: string } }) {
   const { tool, isLoading, isError } = useTool(params.id)
@@ -114,7 +128,7 @@ export default function ToolPage({ params }: { params: { id: string } }) {
             </CardHeader>
             <CardContent>
               <ul className="list-disc pl-6 space-y-2">
-                {tool.features.map((feature: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined, index: Key | null | undefined) => (
+                {tool.features.map((feature: string, index: number) => (
                   <li key={index}>{feature}</li>
                 ))}
               </ul>

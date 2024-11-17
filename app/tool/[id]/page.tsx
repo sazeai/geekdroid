@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react'
 import { Star, ArrowLeft, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -114,7 +114,7 @@ export default function ToolPage({ params }: { params: { id: string } }) {
             </CardHeader>
             <CardContent>
               <ul className="list-disc pl-6 space-y-2">
-                {tool.features.map((feature, index) => (
+                {tool.features.map((feature: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined, index: Key | null | undefined) => (
                   <li key={index}>{feature}</li>
                 ))}
               </ul>

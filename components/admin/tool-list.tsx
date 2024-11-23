@@ -11,23 +11,22 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Pencil, Trash2, Check, X } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTools } from '@/hooks/use-tools'
 import { AddToolDialog } from './add-tool-dialog'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Tool } from '@/types/tool'
+import type { Database } from '@/types/supabase'
 
-interface AdminToolListProps {
-  status?: 'pending' | 'approved' | 'rejected'
-}
+type Tool = Database['public']['Tables']['tools']['Row']
 
-export function AdminToolList({ status }: AdminToolListProps) {
-  const { tools, mutate } = useTools(undefined, undefined, status)
+export function AdminToolList() {
+  const { tools, mutate } = useTools()
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
-  const supabase = createClientComponentClient()
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const supabase = createClientComponentClient<Database>()
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       const { error } = await supabase
         .from('tools')
@@ -43,27 +42,8 @@ export function AdminToolList({ status }: AdminToolListProps) {
     }
   }
 
-  const handleStatusChange = async (id: string, newStatus: 'approved' | 'rejected') => {
-    try {
-      const { error } = await supabase
-        .from('tools')
-        .update({ status: newStatus })
-        .eq('id', id)
-
-      if (error) throw error
-
-      toast.success(`Tool ${newStatus} successfully`)
-      mutate()
-    } catch (error) {
-      toast.error(`Failed to ${newStatus} the tool`)
-    }
-  }
-
   const handleEdit = (tool: Tool) => {
-    setEditingTool({
-      ...tool,
-      features: Array.isArray(tool.features) ? tool.features.join('\n') : tool.features,
-    })
+    setEditingTool(tool)
   }
 
   if (!tools) {
@@ -72,13 +52,16 @@ export function AdminToolList({ status }: AdminToolListProps) {
 
   return (
     <>
+      <div className="mb-4">
+        <Button onClick={() => setIsAddDialogOpen(true)}>Add New Tool</Button>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Submitted By</TableHead>
+              <TableHead>Rating</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -88,40 +71,15 @@ export function AdminToolList({ status }: AdminToolListProps) {
               <TableRow key={tool.id}>
                 <TableCell className="font-medium">{tool.name}</TableCell>
                 <TableCell>{tool.category}</TableCell>
-                <TableCell>{tool.submitted_by ?? 'Admin'}</TableCell>
+                <TableCell>{tool.rating}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Badge variant={
-                      tool.status === 'approved' ? 'default' :
-                      tool.status === 'rejected' ? 'destructive' :
-                      'secondary'
-                    }>
-                      {tool.status}
-                    </Badge>
                     {tool.is_new && <Badge>New</Badge>}
                     {tool.is_popular && <Badge variant="secondary">Popular</Badge>}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    {tool.status === 'pending' && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleStatusChange(tool.id, 'approved')}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleStatusChange(tool.id, 'rejected')}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -132,7 +90,7 @@ export function AdminToolList({ status }: AdminToolListProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(tool.id)}
+                      onClick={() => handleDelete(Number(tool.id))}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -144,11 +102,17 @@ export function AdminToolList({ status }: AdminToolListProps) {
         </Table>
       </div>
       <AddToolDialog
-        open={!!editingTool}
-        onOpenChange={(open) => !open && setEditingTool(null)}
+        open={!!editingTool || isAddDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingTool(null)
+            setIsAddDialogOpen(false)
+          }
+        }}
         editingTool={editingTool}
         onSuccess={() => {
           setEditingTool(null)
+          setIsAddDialogOpen(false)
           mutate()
         }}
       />

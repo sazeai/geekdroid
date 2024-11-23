@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import { useTools } from '@/hooks/use-tools'
 import { AddToolDialog } from './add-tool-dialog'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Tool } from '@/types/tool'
 
 interface AdminToolListProps {
   status?: 'pending' | 'approved' | 'rejected'
@@ -23,7 +24,7 @@ interface AdminToolListProps {
 
 export function AdminToolList({ status }: AdminToolListProps) {
   const { tools, mutate } = useTools(undefined, undefined, status)
-  const [editingTool, setEditingTool] = useState<any>(null)
+  const [editingTool, setEditingTool] = useState<Tool | null>(null)
   const supabase = createClientComponentClient()
 
   const handleDelete = async (id: string) => {
@@ -58,7 +59,7 @@ export function AdminToolList({ status }: AdminToolListProps) {
     }
   }
 
-  const handleEdit = (tool: any) => {
+  const handleEdit = (tool: Tool) => {
     setEditingTool({
       ...tool,
       features: Array.isArray(tool.features) ? tool.features.join('\n') : tool.features,
@@ -87,7 +88,7 @@ export function AdminToolList({ status }: AdminToolListProps) {
               <TableRow key={tool.id}>
                 <TableCell className="font-medium">{tool.name}</TableCell>
                 <TableCell>{tool.category}</TableCell>
-                <TableCell>{tool.submitted_by || 'Admin'}</TableCell>
+                <TableCell>{tool.submitted_by ?? 'Admin'}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Badge variant={
@@ -154,3 +155,4 @@ export function AdminToolList({ status }: AdminToolListProps) {
     </>
   )
 }
+

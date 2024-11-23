@@ -17,7 +17,8 @@ import { useTools } from '@/hooks/use-tools'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/types/supabase'
 
-export type Tool = Omit<Database['public']['Tables']['tools']['Row'], 'features'> & {
+export type Tool = Omit<Database['public']['Tables']['tools']['Row'], 'features' | 'id'> & {
+  id: string
   status: 'pending' | 'approved' | 'rejected'
   is_new?: boolean
   is_popular?: boolean
@@ -40,7 +41,7 @@ export function AdminToolList({ status, onEditTool }: AdminToolListProps) {
     }
   }, [tools, status])
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
         .from('tools')
@@ -95,14 +96,15 @@ export function AdminToolList({ status, onEditTool }: AdminToolListProps) {
                     onClick={() => onEditTool(tool)}
                   >
                     <Pencil className="h-4 w-4" />
-                  </Button>
+                  </
+Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(Number(tool.id))}
+                    onClick={() => handleDelete(tool.id)}
                   >
                     <Trash2 className="h-4 w-4" />
-</Button>
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

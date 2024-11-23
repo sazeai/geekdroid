@@ -4,8 +4,11 @@ import useSWR from 'swr'
 import { useSupabase } from '@/lib/supabase'
 import type { Database } from '@/types/supabase'
 
-type Tool = Database['public']['Tables']['tools']['Row'] & {
-  slug: string;
+export type Tool = Database['public']['Tables']['tools']['Row'] & {
+  status: 'pending' | 'approved' | 'rejected'
+  is_popular?: boolean
+  is_new?: boolean
+  slug: string
 }
 
 export function useTools(
@@ -37,11 +40,14 @@ export function useTools(
 
       if (error) throw error
 
-      // Generate slug for each tool
-      const toolsWithSlug = tools?.map(tool => ({
+      // Generate slug for each tool and ensure all required properties are present
+      const toolsWithSlug: Tool[] = tools?.map(tool => ({
         ...tool,
+        status: tool.status as 'pending' | 'approved' | 'rejected',
+        is_popular: tool.is_popular || false,
+        is_new: tool.is_new || false,
         slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-      }))
+      })) || []
 
       return toolsWithSlug
     } catch (error) {
@@ -86,8 +92,11 @@ export function useTool(slug: string) {
 
       return {
         ...tool,
+        status: tool.status as 'pending' | 'approved' | 'rejected',
+        is_popular: tool.is_popular || false,
+        is_new: tool.is_new || false,
         slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-      }
+      } as Tool
     } catch (error) {
       console.error('Error fetching tool:', error)
       return null

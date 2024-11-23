@@ -4,8 +4,11 @@ import useSWR from 'swr'
 import { useSupabase } from '@/lib/supabase'
 import type { Database } from '@/types/supabase'
 
-type Tool = Database['public']['Tables']['tools']['Row'] & {
+export type Tool = Database['public']['Tables']['tools']['Row'] & {
   slug: string;
+  status: 'pending' | 'approved' | 'rejected';
+  is_new?: boolean;
+  is_popular?: boolean;
 }
 
 export function useTools(
@@ -37,11 +40,12 @@ export function useTools(
 
       if (error) throw error
 
-      // Generate slug for each tool
+      // Generate slug for each tool and ensure status is included
       const toolsWithSlug = tools?.map(tool => ({
         ...tool,
-        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-      }))
+        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        status: tool.status || status // Ensure status is always present
+      })) as Tool[]
 
       return toolsWithSlug
     } catch (error) {
@@ -66,6 +70,7 @@ export function useTools(
     mutate
   }
 }
+
 
 export function useTool(slug: string) {
   const supabase = useSupabase()

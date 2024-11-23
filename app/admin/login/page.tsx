@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
       toast.success('Login successful')
       
       // Use router.replace instead of router.push
-      router.replace('/admin/dashboard')
+      router.replace('/admin')
     } catch (error) {
       console.error('Login error:', error)
       toast.error(error instanceof Error ? error.message : 'An error occurred during login')

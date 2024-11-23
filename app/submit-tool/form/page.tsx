@@ -35,7 +35,7 @@ const toolSchema = z.object({
   image: z.string().url('Must be a valid URL'),
   affiliate_link: z.string().url('Must be a valid URL'),
   features: z.string(),
-  pricing: z.string(),
+  pricing: z.string().min(1, 'Pricing information is required'),
 })
 
 export default function SubmitToolForm() {
@@ -88,6 +88,8 @@ export default function SubmitToolForm() {
               Fill out the form below to submit your AI tool for review
             </p>
           </div>
+
+  
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -213,7 +215,7 @@ export default function SubmitToolForm() {
                 )}
               />
 
-              <FormField
+<FormField
                 control={form.control}
                 name="pricing"
                 render={({ field }) => (
@@ -223,7 +225,7 @@ export default function SubmitToolForm() {
                       <Input {...field} />
                     </FormControl>
                     <FormDescription>
-                      E.g., "Free", "Starting at $9/month"
+                      Describe the pricing structure (e.g., "Free", "Starting at $9/month", "Free trial, then $29/month")
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -240,3 +242,4 @@ export default function SubmitToolForm() {
     </div>
   )
 }
+

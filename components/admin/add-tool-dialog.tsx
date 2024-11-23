@@ -34,7 +34,7 @@ import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/types/supabase'
-import { Tool } from './tool-list'
+import { Tool } from '@/hooks/use-tools'
 
 const toolSchema = z.object({
   id: z.number().optional(),
@@ -256,7 +256,7 @@ export function AddToolDialog({
               control={form.control}
               name="affiliate_link"
               render={({ field }) => (
-                <FormItem>
+<FormItem>
                   <FormLabel>Affiliate Link</FormLabel>
                   <FormControl>
                     <Input {...field} />

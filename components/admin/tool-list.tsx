@@ -18,9 +18,12 @@ import { AddToolDialog } from './add-tool-dialog'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/types/supabase'
 
+// Update the Tool type to include all necessary properties
 type Tool = Database['public']['Tables']['tools']['Row'] & {
   status: 'pending' | 'approved' | 'rejected'
   is_popular?: boolean
+  is_new?: boolean
+  slug: string
 }
 
 interface AdminToolListProps {
@@ -28,7 +31,7 @@ interface AdminToolListProps {
 }
 
 export function AdminToolList({ status }: AdminToolListProps) {
-  const { tools, mutate } = useTools()
+  const { tools, mutate } = useTools(undefined, undefined, status)
   const [filteredTools, setFilteredTools] = useState<Tool[]>([])
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)

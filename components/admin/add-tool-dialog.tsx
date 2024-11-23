@@ -315,8 +315,7 @@ export function AddToolDialog({
                   <FormControl>
                     <Switch
                       checked={field.value}
-                      onCheckedChange={fiel
-d.onChange}
+                      onCheckedChange={field.onChange}
                     />
                   </FormControl>
                 </FormItem>

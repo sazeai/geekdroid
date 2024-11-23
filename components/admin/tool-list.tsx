@@ -13,10 +13,16 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTools, Tool } from '@/hooks/use-tools'
+import { useTools } from '@/hooks/use-tools'
 import { AddToolDialog } from './add-tool-dialog'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/types/supabase'
+
+export type Tool = Database['public']['Tables']['tools']['Row'] & {
+  status: 'pending' | 'approved' | 'rejected'
+  is_new?: boolean
+  is_popular?: boolean
+}
 
 interface AdminToolListProps {
   status: 'pending' | 'approved' | 'rejected'
@@ -31,7 +37,7 @@ export function AdminToolList({ status }: AdminToolListProps) {
 
   useEffect(() => {
     if (tools) {
-      setFilteredTools(tools.filter((tool) => tool.status === status))
+      setFilteredTools(tools.filter((tool): tool is Tool => tool.status === status))
     }
   }, [tools, status])
 

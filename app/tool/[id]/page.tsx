@@ -203,3 +203,4 @@ export default function ToolPage({ params }: { params: { id: string } }) {
     </div>
   )
 }
+

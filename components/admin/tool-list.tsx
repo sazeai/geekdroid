@@ -13,17 +13,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTools } from '@/hooks/use-tools'
+import { useTools, Tool } from '@/hooks/use-tools'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/types/supabase'
-
-export type Tool = Omit<Database['public']['Tables']['tools']['Row'], 'features' | 'id'> & {
-  id: string
-  status: 'pending' | 'approved' | 'rejected'
-  is_new?: boolean
-  is_popular?: boolean
-  features: string[] | string
-}
 
 interface AdminToolListProps {
   status: 'pending' | 'approved' | 'rejected'
@@ -41,7 +33,7 @@ export function AdminToolList({ status, onEditTool }: AdminToolListProps) {
     }
   }, [tools, status])
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       const { error } = await supabase
         .from('tools')
@@ -96,12 +88,11 @@ export function AdminToolList({ status, onEditTool }: AdminToolListProps) {
                     onClick={() => onEditTool(tool)}
                   >
                     <Pencil className="h-4 w-4" />
-                  </
-Button>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(tool.id)}
+                    onClick={() => handleDelete(Number(tool.id))}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

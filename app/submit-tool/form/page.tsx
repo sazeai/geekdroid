@@ -29,20 +29,22 @@ import { useRouter } from 'next/navigation'
 
 const toolSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(200, 'Description must be at most 200 characters'),
   long_description: z.string().min(50, 'Long description must be at least 50 characters'),
   category: z.string().min(1, 'Category is required'),
   image: z.string().url('Must be a valid URL'),
   affiliate_link: z.string().url('Must be a valid URL'),
-  features: z.string(),
+  features: z.string().min(1, 'At least one feature is required'),
   pricing: z.string().min(1, 'Pricing information is required'),
 })
+
+type ToolFormData = z.infer<typeof toolSchema>
 
 export default function SubmitToolForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const form = useForm<z.infer<typeof toolSchema>>({
+  const form = useForm<ToolFormData>({
     resolver: zodResolver(toolSchema),
     defaultValues: {
       name: '',
@@ -56,7 +58,7 @@ export default function SubmitToolForm() {
     },
   })
 
-  const onSubmit = async (data: z.infer<typeof toolSchema>) => {
+  const onSubmit = async (data: ToolFormData) => {
     setIsLoading(true)
     try {
       const response = await fetch('/api/tools', {
@@ -66,13 +68,18 @@ export default function SubmitToolForm() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to submit tool')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to submit tool')
       }
 
       toast.success('Tool submitted successfully! It will be reviewed by our team.')
       router.push('/')
     } catch (error) {
-      toast.error('Failed to submit tool. Please try again.')
+      if (error instanceof Error) {
+        toast.error(`Failed to submit tool: ${error.message}`)
+      } else {
+        toast.error('An unexpected error occurred. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -88,8 +95,6 @@ export default function SubmitToolForm() {
               Fill out the form below to submit your AI tool for review
             </p>
           </div>
-
-  
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -215,7 +220,7 @@ export default function SubmitToolForm() {
                 )}
               />
 
-<FormField
+              <FormField
                 control={form.control}
                 name="pricing"
                 render={({ field }) => (
@@ -242,4 +247,3 @@ export default function SubmitToolForm() {
     </div>
   )
 }
-

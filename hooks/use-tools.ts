@@ -4,12 +4,8 @@ import useSWR from 'swr'
 import { useSupabase } from '@/lib/supabase'
 import type { Database } from '@/types/supabase'
 
-export type Tool = Database['public']['Tables']['tools']['Row'] & {
+type Tool = Database['public']['Tables']['tools']['Row'] & {
   slug: string;
-  status: 'pending' | 'approved' | 'rejected';
-  is_new?: boolean;
-  is_popular?: boolean;
-  features: string[] | string;
 }
 
 export function useTools(
@@ -41,13 +37,11 @@ export function useTools(
 
       if (error) throw error
 
-      // Generate slug for each tool and ensure status is included
+      // Generate slug for each tool
       const toolsWithSlug = tools?.map(tool => ({
         ...tool,
-        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        status: tool.status || status, // Ensure status is always present
-        features: Array.isArray(tool.features) ? tool.features : tool.features.split(',')
-      })) as Tool[]
+        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      }))
 
       return toolsWithSlug
     } catch (error) {
@@ -70,6 +64,49 @@ export function useTools(
     isLoading,
     isError: error,
     mutate
+  }
+}
+
+export function useTool(slug: string) {
+  const supabase = useSupabase()
+
+  const fetcher = async () => {
+    try {
+      const { data: tools, error } = await supabase
+        .from('tools')
+        .select('*')
+
+      if (error) throw error
+
+      const tool = tools?.find(t => 
+        t.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') === slug
+      )
+
+      if (!tool) throw new Error('Tool not found')
+
+      return {
+        ...tool,
+        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      }
+    } catch (error) {
+      console.error('Error fetching tool:', error)
+      return null
+    }
+  }
+
+  const { data: tool, error, isLoading } = useSWR<Tool | null>(
+    `tool-${slug}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false
+    }
+  )
+
+  return {
+    tool,
+    isLoading,
+    isError: error
   }
 }
 

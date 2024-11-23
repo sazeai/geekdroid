@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -20,11 +20,22 @@ import type { Database } from '@/types/supabase'
 
 type Tool = Database['public']['Tables']['tools']['Row']
 
-export function AdminToolList() {
+interface AdminToolListProps {
+  status: 'pending' | 'approved' | 'rejected'
+}
+
+export function AdminToolList({ status }: AdminToolListProps) {
   const { tools, mutate } = useTools()
+  const [filteredTools, setFilteredTools] = useState<Tool[]>([])
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const supabase = createClientComponentClient<Database>()
+
+  useEffect(() => {
+    if (tools) {
+      setFilteredTools(tools.filter(tool => tool.status === status))
+    }
+  }, [tools, status])
 
   const handleDelete = async (id: number) => {
     try {
@@ -67,7 +78,7 @@ export function AdminToolList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tools?.map((tool) => (
+            {filteredTools.map((tool) => (
               <TableRow key={tool.id}>
                 <TableCell className="font-medium">{tool.name}</TableCell>
                 <TableCell>{tool.category}</TableCell>

@@ -45,8 +45,9 @@ export default function AdminLoginPage() {
       if (profile.role !== 'admin') throw new Error('Unauthorized access')
 
       toast.success('Login successful')
-      router.push('/admin')
-      router.refresh()
+      
+      // Use router.replace instead of router.push
+      router.replace('/admin/dashboard')
     } catch (error) {
       console.error('Login error:', error)
       toast.error(error instanceof Error ? error.message : 'An error occurred during login')
@@ -112,3 +113,4 @@ export default function AdminLoginPage() {
     </div>
   )
 }
+

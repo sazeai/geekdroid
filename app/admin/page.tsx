@@ -9,6 +9,7 @@ import { AuthButton } from '@/components/admin/auth-button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 
+
 export default function AdminPage() {
   useAdminAuth()
   const [open, setOpen] = useState(false)

@@ -81,7 +81,6 @@ export default function BlogPostPage({ params }: Props) {
           <Breadcrumb
             items={[
               { label: 'Blog', href: '/blog' },
-              { label: post.category, href: `/blog/category/${post.category.toLowerCase()}` },
               { label: post.title }
             ]}
           />
@@ -125,3 +124,4 @@ export default function BlogPostPage({ params }: Props) {
     </>
   )
 }
+

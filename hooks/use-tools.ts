@@ -4,7 +4,9 @@ import useSWR from 'swr'
 import { useSupabase } from '@/lib/supabase'
 import type { Database } from '@/types/supabase'
 
-type Tool = Database['public']['Tables']['tools']['Row']
+type Tool = Database['public']['Tables']['tools']['Row'] & {
+  slug: string;
+}
 
 export function useTools(
   category?: string,
@@ -32,8 +34,16 @@ export function useTools(
       }
 
       const { data: tools, error } = await query
+
       if (error) throw error
-      return tools
+
+      // Generate slug for each tool
+      const toolsWithSlug = tools?.map(tool => ({
+        ...tool,
+        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      }))
+
+      return toolsWithSlug
     } catch (error) {
       console.error('Error fetching tools:', error)
       return []
@@ -57,19 +67,27 @@ export function useTools(
   }
 }
 
-export function useTool(id: string) {
+export function useTool(slug: string) {
   const supabase = useSupabase()
 
   const fetcher = async () => {
     try {
-      const { data: tool, error } = await supabase
+      const { data: tools, error } = await supabase
         .from('tools')
         .select('*')
-        .eq('id', id)
-        .single()
 
       if (error) throw error
-      return tool
+
+      const tool = tools?.find(t => 
+        t.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') === slug
+      )
+
+      if (!tool) throw new Error('Tool not found')
+
+      return {
+        ...tool,
+        slug: tool.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      }
     } catch (error) {
       console.error('Error fetching tool:', error)
       return null
@@ -77,7 +95,7 @@ export function useTool(id: string) {
   }
 
   const { data: tool, error, isLoading } = useSWR<Tool | null>(
-    `tool-${id}`,
+    `tool-${slug}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -91,3 +109,4 @@ export function useTool(id: string) {
     isError: error
   }
 }
+

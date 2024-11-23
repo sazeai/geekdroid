@@ -8,10 +8,22 @@ import { AddToolDialog } from '@/components/admin/add-tool-dialog'
 import { AuthButton } from '@/components/admin/auth-button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
+import type { Tool } from '@/components/admin/tool-list'
 
 export default function AdminPage() {
   useAdminAuth()
   const [open, setOpen] = useState(false)
+  const [editingTool, setEditingTool] = useState<Tool | null>(null)
+
+  const handleAddTool = () => {
+    setEditingTool(null)
+    setOpen(true)
+  }
+
+  const handleEditTool = (tool: Tool) => {
+    setEditingTool(tool)
+    setOpen(true)
+  }
 
   return (
     <div className="container py-8 space-y-6">
@@ -21,7 +33,7 @@ export default function AdminPage() {
           <p className="text-muted-foreground">Manage your AI tools directory</p>
         </div>
         <div className="flex items-center gap-4">
-          <Button onClick={() => setOpen(true)}>
+          <Button onClick={handleAddTool}>
             <Plus className="mr-2 h-4 w-4" />
             Add Tool
           </Button>
@@ -36,17 +48,25 @@ export default function AdminPage() {
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
         </TabsList>
         <TabsContent value="pending">
-          <AdminToolList status="pending" />
+          <AdminToolList status="pending" onEditTool={handleEditTool} />
         </TabsContent>
         <TabsContent value="approved">
-          <AdminToolList status="approved" />
+          <AdminToolList status="approved" onEditTool={handleEditTool} />
         </TabsContent>
         <TabsContent value="rejected">
-          <AdminToolList status="rejected" />
+          <AdminToolList status="rejected" onEditTool={handleEditTool} />
         </TabsContent>
       </Tabs>
 
-      <AddToolDialog open={open} onOpenChange={setOpen} />
+      <AddToolDialog 
+        open={open} 
+        onOpenChange={setOpen} 
+        editingTool={editingTool}
+        onSuccess={() => {
+          setEditingTool(null)
+          setOpen(false)
+        }}
+      />
     </div>
   )
 }

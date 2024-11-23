@@ -24,6 +24,7 @@ import { AdUnit } from '@/components/ads/ad-unit'
 interface Tool {
   id: string
   name: string
+  slug: string
   category: string
   is_new: boolean
   image: string
@@ -34,8 +35,8 @@ interface Tool {
   affiliate_link: string
 }
 
-export default function ToolPage({ params }: { params: { id: string } }) {
-  const { tool, isLoading, isError } = useTool(params.id)
+export default function ToolPage({ params }: { params: { slug: string } }) {
+  const { tool, isLoading, isError } = useTool(params.slug)
   const [showAffiliatePopup, setShowAffiliatePopup] = useState(false)
 
   if (isLoading) {
@@ -66,6 +67,7 @@ export default function ToolPage({ params }: { params: { id: string } }) {
       </div>
     )
   }
+
 
   if (isError || !tool) {
     return (

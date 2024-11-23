@@ -8,6 +8,11 @@ import { Star, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { useTools } from '@/hooks/use-tools'
 import { CategoryFilter } from './category-filter'
+import type { Database } from '@/types/supabase'
+
+type Tool = Database['public']['Tables']['tools']['Row'] & {
+  slug: string;
+}
 
 export function ToolGrid() {
   const [filter, setFilter] = useState('all')
@@ -78,7 +83,7 @@ export function ToolGrid() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tools?.map((tool) => (
+            {tools?.map((tool: Tool) => (
               <Card key={tool.id} className="overflow-hidden">
                 <div className="aspect-video relative">
                   <img
@@ -109,7 +114,7 @@ export function ToolGrid() {
                       <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                       <span className="ml-2 font-medium">{tool.rating}</span>
                     </div>
-                    <Link href={`/tool/${tool.id}`}>
+                    <Link href={`/tool/${tool.slug}`}>
                       <Button>
                         View Details
                         <ExternalLink className="ml-2 h-4 w-4" />
@@ -125,3 +130,4 @@ export function ToolGrid() {
     </div>
   )
 }
+

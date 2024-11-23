@@ -20,6 +20,7 @@ import type { Database } from '@/types/supabase'
 
 type Tool = Database['public']['Tables']['tools']['Row'] & {
   status: 'pending' | 'approved' | 'rejected'
+  is_popular?: boolean
 }
 
 interface AdminToolListProps {

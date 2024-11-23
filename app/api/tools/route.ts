@@ -6,13 +6,13 @@ import { z } from 'zod'
 // Tool schema for validation
 const toolSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(200, 'Description must be at most 200 characters'),
   long_description: z.string().min(50, 'Long description must be at least 50 characters'),
   category: z.string().min(1, 'Category is required'),
   image: z.string().url('Must be a valid URL'),
   affiliate_link: z.string().url('Must be a valid URL'),
-  features: z.string(),
-  pricing: z.string(),
+  features: z.string().min(1, 'At least one feature is required'),
+  pricing: z.string().min(1, 'Pricing information is required'),
 })
 
 export async function POST(request: Request) {
@@ -45,7 +45,16 @@ export async function POST(request: Request) {
     // Add the tool to the database
     const { data, error } = await supabase
       .from('tools')
-      .insert({ ...tool, user_id: session.user.id, status: 'pending' })
+      .insert({
+        ...tool,
+        user_id: session.user.id,
+        status: 'pending',
+        is_new: true,
+        rating: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
 
     if (error) throw error
 
@@ -58,3 +67,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+

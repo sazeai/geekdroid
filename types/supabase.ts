@@ -35,11 +35,7 @@ export type Database = {
           rating: number
           is_new: boolean
           features: string[]
-          pricing: {
-            free: boolean
-            starter: number
-            pro: number
-          }
+          pricing: string
           affiliate_link: string
           created_at: string
           updated_at: string
@@ -54,11 +50,7 @@ export type Database = {
           rating?: number
           is_new?: boolean
           features?: string[]
-          pricing?: {
-            free: boolean
-            starter: number
-            pro: number
-          }
+          pricing?: string
           affiliate_link?: string
           created_at?: string
           updated_at?: string
@@ -73,11 +65,7 @@ export type Database = {
           rating?: number
           is_new?: boolean
           features?: string[]
-          pricing?: {
-            free: boolean
-            starter: number
-            pro: number
-          }
+          pricing?: string
           affiliate_link?: string
           created_at?: string
           updated_at?: string

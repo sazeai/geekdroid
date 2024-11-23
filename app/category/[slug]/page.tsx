@@ -114,7 +114,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                     <span className="ml-2 font-medium">{tool.rating}</span>
                   </div>
-                  <Link href={`/tool/${tool.id}`}>
+                  <Link href={`/tool/${tool.slug}`}>
                     <Button>
                       View Details
                       <ExternalLink className="ml-2 h-4 w-4" />
@@ -143,3 +143,4 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     </>
   )
 }
+

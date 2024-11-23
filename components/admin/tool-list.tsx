@@ -18,7 +18,9 @@ import { AddToolDialog } from './add-tool-dialog'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Database } from '@/types/supabase'
 
-type Tool = Database['public']['Tables']['tools']['Row']
+type Tool = Database['public']['Tables']['tools']['Row'] & {
+  status: 'pending' | 'approved' | 'rejected'
+}
 
 interface AdminToolListProps {
   status: 'pending' | 'approved' | 'rejected'
@@ -33,7 +35,7 @@ export function AdminToolList({ status }: AdminToolListProps) {
 
   useEffect(() => {
     if (tools) {
-      setFilteredTools(tools.filter(tool => tool.status === status))
+      setFilteredTools(tools.filter((tool): tool is Tool => 'status' in tool && tool.status === status))
     }
   }, [tools, status])
 
@@ -85,6 +87,9 @@ export function AdminToolList({ status }: AdminToolListProps) {
                 <TableCell>{tool.rating}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
+                    <Badge variant={tool.status === 'approved' ? 'default' : tool.status === 'pending' ? 'secondary' : 'destructive'}>
+                      {tool.status}
+                    </Badge>
                     {tool.is_new && <Badge>New</Badge>}
                     {tool.is_popular && <Badge variant="secondary">Popular</Badge>}
                   </div>

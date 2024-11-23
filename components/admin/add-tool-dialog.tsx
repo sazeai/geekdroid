@@ -32,32 +32,25 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import type { Database } from '@/types/supabase'
-import { Tool } from '@/hooks/use-tools'
 
 const toolSchema = z.object({
-  id: z.number().optional(),
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   long_description: z.string().min(50, 'Long description must be at least 50 characters'),
   category: z.string().min(1, 'Category is required'),
-  rating: z.coerce.number().min(0).max(5),
+  rating: z.string().transform(Number),
   image: z.string().url('Must be a valid URL'),
   affiliate_link: z.string().url('Must be a valid URL'),
   features: z.string(),
   pricing: z.string(),
   is_new: z.boolean(),
   is_popular: z.boolean(),
-  status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
 })
-
-type ToolSchemaType = z.infer<typeof toolSchema>;
 
 interface AddToolDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  editingTool: Tool | null
+  editingTool?: any
   onSuccess?: () => void
 }
 
@@ -67,84 +60,42 @@ export function AddToolDialog({
   editingTool,
   onSuccess,
 }: AddToolDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const supabase = createClientComponentClient<Database>()
-
-  const form = useForm<ToolSchemaType>({
+  const form = useForm<z.infer<typeof toolSchema>>({
     resolver: zodResolver(toolSchema),
-    defaultValues: editingTool
-      ? {
-          ...editingTool,
-          id: editingTool.id ? Number(editingTool.id) : undefined,
-          features: Array.isArray(editingTool.features)
-            ? editingTool.features.join('\n')
-            : editingTool.features,
-        }
-      : {
-          name: '',
-          description: '',
-          long_description: '',
-          category: '',
-          rating: 0,
-          image: '',
-          affiliate_link: '',
-          features: '',
-          pricing: '',
-          is_new: false,
-          is_popular: false,
-          status: 'pending',
-        },
+    defaultValues: editingTool || {
+      name: '',
+      description: '',
+      long_description: '',
+      category: '',
+      rating: '0',
+      image: '',
+      affiliate_link: '',
+      features: '',
+      pricing: '',
+      is_new: false,
+      is_popular: false,
+    },
   })
 
-  const onSubmit = async (data: ToolSchemaType) => {
-    setIsSubmitting(true)
+  const onSubmit = async (data: z.infer<typeof toolSchema>) => {
     try {
-      console.log('Submitting data:', data)
-      
-      let savedTool;
-      let error;
+      const response = await fetch('/api/tools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
 
-      const submissionData = {
-        ...data,
-        features: data.features.split('\n').filter(feature => feature.trim() !== '')
-      };
-
-      if (editingTool && editingTool.id) {
-        const { data: updatedTool, error: updateError } = await supabase
-          .from('tools')
-          .update(submissionData)
-          .eq('id', editingTool.id)
-          .select()
-        savedTool = updatedTool;
-        error = updateError;
-      } else {
-        const { data: insertedTool, error: insertError } = await supabase
-          .from('tools')
-          .insert([submissionData])
-          .select()
-        savedTool = insertedTool;
-        error = insertError;
-      }
-
-      if (error) {
-        console.error('Error saving tool:', error)
+      if (!response.ok) {
+        const error = await response.json()
         throw new Error(error.message || 'Failed to save tool')
       }
 
-      if (!savedTool) {
-        throw new Error('No data returned from Supabase')
-      }
-
-      console.log('Tool saved successfully:', savedTool)
-      toast.success(editingTool ? 'Tool updated successfully' : 'Tool added successfully')
+      toast.success('Tool added successfully')
       form.reset()
       onOpenChange(false)
       if (onSuccess) onSuccess()
     } catch (error: any) {
-      console.error('Error in onSubmit:', error)
       toast.error(error.message || 'Failed to save tool')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -256,7 +207,7 @@ export function AddToolDialog({
               control={form.control}
               name="affiliate_link"
               render={({ field }) => (
-<FormItem>
+                <FormItem>
                   <FormLabel>Affiliate Link</FormLabel>
                   <FormControl>
                     <Input {...field} />
@@ -338,9 +289,7 @@ export function AddToolDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : editingTool ? 'Update' : 'Add'} Tool
-              </Button>
+              <Button type="submit">{editingTool ? 'Update' : 'Add'} Tool</Button>
             </div>
           </form>
         </Form>
@@ -348,4 +297,3 @@ export function AddToolDialog({
     </Dialog>
   )
 }
-

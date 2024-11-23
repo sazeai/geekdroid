@@ -72,23 +72,28 @@ export function AddToolDialog({
 
   const form = useForm<ToolSchemaType>({
     resolver: zodResolver(toolSchema),
-    defaultValues: editingTool ? {
-      ...editingTool,
-      features: Array.isArray(editingTool.features) ? editingTool.features.join('\n') : editingTool.features
-    } : {
-      name: '',
-      description: '',
-      long_description: '',
-      category: '',
-      rating: 0,
-      image: '',
-      affiliate_link: '',
-      features: '',
-      pricing: '',
-      is_new: false,
-      is_popular: false,
-      status: 'pending',
-    },
+    defaultValues: editingTool
+      ? {
+          ...editingTool,
+          id: editingTool.id ? Number(editingTool.id) : undefined,
+          features: Array.isArray(editingTool.features)
+            ? editingTool.features.join('\n')
+            : editingTool.features,
+        }
+      : {
+          name: '',
+          description: '',
+          long_description: '',
+          category: '',
+          rating: 0,
+          image: '',
+          affiliate_link: '',
+          features: '',
+          pricing: '',
+          is_new: false,
+          is_popular: false,
+          status: 'pending',
+        },
   })
 
   const onSubmit = async (data: ToolSchemaType) => {

@@ -72,7 +72,10 @@ export function AddToolDialog({
 
   const form = useForm<ToolSchemaType>({
     resolver: zodResolver(toolSchema),
-    defaultValues: editingTool || {
+    defaultValues: editingTool ? {
+      ...editingTool,
+      features: Array.isArray(editingTool.features) ? editingTool.features.join('\n') : editingTool.features
+    } : {
       name: '',
       description: '',
       long_description: '',
@@ -96,10 +99,15 @@ export function AddToolDialog({
       let savedTool;
       let error;
 
+      const submissionData = {
+        ...data,
+        features: data.features.split('\n').filter(feature => feature.trim() !== '')
+      };
+
       if (editingTool && editingTool.id) {
         const { data: updatedTool, error: updateError } = await supabase
           .from('tools')
-          .update(data)
+          .update(submissionData)
           .eq('id', editingTool.id)
           .select()
         savedTool = updatedTool;
@@ -107,7 +115,7 @@ export function AddToolDialog({
       } else {
         const { data: insertedTool, error: insertError } = await supabase
           .from('tools')
-          .insert([data])
+          .insert([submissionData])
           .select()
         savedTool = insertedTool;
         error = insertError;

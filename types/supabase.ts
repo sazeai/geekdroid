@@ -6,79 +6,82 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
       profiles: {
         Row: {
           id: string
-          created_at: string
-          updated_at: string
           email: string
           role: string
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id: string
-          created_at?: string
-          updated_at?: string
           email: string
           role?: string
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          created_at?: string
-          updated_at?: string
           email?: string
           role?: string
+          created_at?: string
+          updated_at?: string
         }
       }
       tools: {
         Row: {
-          id: number
-          created_at: string
+          id: string
           name: string
           description: string
           long_description: string
           category: string
-          rating: number
           image: string
-          affiliate_link: string
-          features: string[]
-          pricing: string
+          rating: number
           is_new: boolean
           is_popular: boolean
+          features: string[]
+          pricing: string
+          affiliate_link: string
+          created_at: string
+          updated_at: string
           status: 'pending' | 'approved' | 'rejected'
         }
         Insert: {
-          id?: number
-          created_at?: string
+          id?: string
           name: string
           description: string
           long_description: string
           category: string
-          rating: number
           image: string
-          affiliate_link: string
-          features?: string[]
-          pricing: string
+          rating?: number
           is_new?: boolean
           is_popular?: boolean
+          features?: string[]
+          pricing?: string
+          affiliate_link?: string
+          created_at?: string
+          updated_at?: string
           status?: 'pending' | 'approved' | 'rejected'
         }
         Update: {
-          id?: number
-          created_at?: string
+          id?: string
           name?: string
           description?: string
           long_description?: string
           category?: string
-          rating?: number
           image?: string
-          affiliate_link?: string
-          features?: string[]
-          pricing?: string
+          rating?: number
           is_new?: boolean
           is_popular?: boolean
+          features?: string[]
+          pricing?: string
+          affiliate_link?: string
+          created_at?: string
+          updated_at?: string
           status?: 'pending' | 'approved' | 'rejected'
         }
       }

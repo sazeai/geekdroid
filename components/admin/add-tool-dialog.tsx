@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -32,25 +30,30 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
+import { useSupabase } from '@/lib/supabase'
+import type { Database } from '@/types/supabase'
 
 const toolSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   long_description: z.string().min(50, 'Long description must be at least 50 characters'),
   category: z.string().min(1, 'Category is required'),
-  rating: z.string().transform(Number),
+  rating: z.number().min(0).max(5),
   image: z.string().url('Must be a valid URL'),
   affiliate_link: z.string().url('Must be a valid URL'),
-  features: z.string(),
+  features: z.string().transform(str => str.split('\n').filter(Boolean)),
   pricing: z.string(),
   is_new: z.boolean(),
   is_popular: z.boolean(),
+  status: z.enum(['pending', 'approved', 'rejected']),
 })
+
+type ToolFormData = z.infer<typeof toolSchema>
 
 interface AddToolDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  editingTool?: any
+  editingTool?: Database['public']['Tables']['tools']['Row']
   onSuccess?: () => void
 }
 
@@ -60,41 +63,46 @@ export function AddToolDialog({
   editingTool,
   onSuccess,
 }: AddToolDialogProps) {
-  const form = useForm<z.infer<typeof toolSchema>>({
+  const supabase = useSupabase()
+  const form = useForm<ToolFormData>({
     resolver: zodResolver(toolSchema),
     defaultValues: editingTool || {
       name: '',
       description: '',
       long_description: '',
       category: '',
-      rating: '0',
+      rating: 0,
       image: '',
       affiliate_link: '',
-      features: '',
+      features: [],
       pricing: '',
       is_new: false,
       is_popular: false,
+      status: 'pending',
     },
   })
 
-  const onSubmit = async (data: z.infer<typeof toolSchema>) => {
+  const onSubmit = async (data: ToolFormData) => {
     try {
-      const response = await fetch('/api/tools', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
+      const { data: toolData, error } = editingTool
+        ? await supabase
+            .from('tools')
+            .update(data)
+            .eq('id', editingTool.id)
+            .select()
+        : await supabase
+            .from('tools')
+            .insert(data)
+            .select()
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to save tool')
-      }
+      if (error) throw error
 
-      toast.success('Tool added successfully')
+      toast.success(editingTool ? 'Tool updated successfully' : 'Tool added successfully')
       form.reset()
       onOpenChange(false)
       if (onSuccess) onSuccess()
     } catch (error: any) {
+      console.error('Error saving tool:', error)
       toast.error(error.message || 'Failed to save tool')
     }
   }
@@ -285,6 +293,28 @@ export function AddToolDialog({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex justify-end gap-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
@@ -297,3 +327,4 @@ export function AddToolDialog({
     </Dialog>
   )
 }
+

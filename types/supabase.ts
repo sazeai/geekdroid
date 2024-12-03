@@ -1,76 +1,97 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
 export type Database = {
   public: {
     Tables: {
       profiles: {
         Row: {
           id: string
-          email: string
-          role: string
           created_at: string
           updated_at: string
+          email: string
+          role: string
         }
         Insert: {
           id: string
-          email: string
-          role?: string
           created_at?: string
           updated_at?: string
+          email: string
+          role?: string
         }
         Update: {
           id?: string
-          email?: string
-          role?: string
           created_at?: string
           updated_at?: string
+          email?: string
+          role?: string
         }
       }
       tools: {
         Row: {
-          id: string
+          id: number
+          created_at: string
           name: string
           description: string
           long_description: string
           category: string
-          image: string
           rating: number
-          is_new: boolean
+          image: string
+          affiliate_link: string
           features: string[]
           pricing: string
-          affiliate_link: string
-          created_at: string
-          updated_at: string
+          is_new: boolean
+          is_popular: boolean
+          status: 'pending' | 'approved' | 'rejected'
         }
         Insert: {
-          id?: string
+          id?: number
+          created_at?: string
           name: string
           description: string
           long_description: string
           category: string
+          rating: number
           image: string
-          rating?: number
-          is_new?: boolean
+          affiliate_link: string
           features?: string[]
-          pricing?: string
-          affiliate_link?: string
-          created_at?: string
-          updated_at?: string
+          pricing: string
+          is_new?: boolean
+          is_popular?: boolean
+          status?: 'pending' | 'approved' | 'rejected'
         }
         Update: {
-          id?: string
+          id?: number
+          created_at?: string
           name?: string
           description?: string
           long_description?: string
           category?: string
-          image?: string
           rating?: number
-          is_new?: boolean
+          image?: string
+          affiliate_link?: string
           features?: string[]
           pricing?: string
-          affiliate_link?: string
-          created_at?: string
-          updated_at?: string
+          is_new?: boolean
+          is_popular?: boolean
+          status?: 'pending' | 'approved' | 'rejected'
         }
       }
     }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      tool_status: 'pending' | 'approved' | 'rejected'
+    }
   }
 }
+

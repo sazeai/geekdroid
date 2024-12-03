@@ -1,40 +1,44 @@
 import { NextResponse } from 'next/server'
-import path from 'path'
-import fs from 'fs/promises'
-import matter from 'gray-matter'
+import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
-    const slug = params.slug
-    const filePath = path.join(process.cwd(), 'content', 'blog', `${slug}.mdx`)
+    const { data: post, error } = await supabase
+      .from('blog_posts')
+      .select(`
+        *,
+        author:authors(*),
+        sections:post_sections(*)
+      `)
+      .eq('slug', params.slug)
+      .eq('published', true)
+      .single()
 
-    // Check if the file exists
-    try {
-      await fs.access(filePath)
-    } catch (error) {
+    if (error) throw error
+
+    if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Read the MDX file
-    const fileContent = await fs.readFile(filePath, 'utf8')
-    
-    // Parse the frontmatter and content
-    const { data: frontmatter, content } = matter(fileContent)
+    // Increment view count
+    const { error: updateError } = await supabase
+      .from('blog_posts')
+      .update({ views: (post.views || 0) + 1 })
+      .eq('id', post.id)
 
-    // Return the blog post data
-    return NextResponse.json({
-      slug,
-      frontmatter,
-      content
-    })
+    if (updateError) {
+      console.error('Error updating view count:', updateError)
+    }
+
+    return NextResponse.json(post)
   } catch (error) {
     console.error('Error fetching blog post:', error)
     return NextResponse.json({ error: 'Failed to fetch blog post' }, { status: 500 })
   }
 }
-
